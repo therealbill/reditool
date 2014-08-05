@@ -18,6 +18,8 @@ var (
 	fileFormat        string
 	apikey            string
 	username          string
+	waitForBGSave     bool
+	maxWait           int
 	logger            *log.Logger
 )
 
@@ -31,6 +33,8 @@ func init() {
 	logger = log.New(os.Stdout, "reditool", log.LstdFlags)
 	backup.Flags().StringVarP(&apikey, "apikey", "a", "", "The API key for the cloud storage service being used")
 	backup.Flags().StringVarP(&username, "username", "u", "", "The username for the cloud storage service being used")
+	//backup.Flags().BoolVarP(&waitForBGSave, "waitforsave", "w", false, "If a BGSave is in progress, wait for completion before syncing")
+	//backup.Flags().IntVarP(&maxWait, "maxwait", "m", 60, "Maximum seconds to wait for a BGSave to complete")
 }
 
 var backup = &cobra.Command{
@@ -110,20 +114,23 @@ func BackupServer(cmd *cobra.Command, args []string) {
 	default:
 		logger.Fatal("Unknown backup destination driver given:", backupDestination)
 	}
+	logger.Println("Backup up using driver:", dconfig.Name)
 
-	logger.Println("Backup up to driver:", dconfig.Name)
+	// Connect to the Redis node
 	r, err := client.Dial(host, port)
 	if err != nil {
 		logger.Fatal("Unable to connect to redis instance")
 	} else {
 		logger.Println("Connection to redis confirmed")
 	}
+	// obtain node information
 	info, err := r.Info()
 	role := info.Replication.Role
 	if err != nil {
 		logger.Fatal("Unable to get the role of the redis instance")
 	}
 	logger.Println("Role:", role)
+	// verify the role we get matches our condition for a backup
 	switch role {
 	case roleRequired:
 		logger.Println("acceptable role confirmed, now to perform a backup...")
@@ -131,8 +138,8 @@ func BackupServer(cmd *cobra.Command, args []string) {
 		logger.Println("Role mismatch, no backup will be performed")
 		return
 	}
+
 	td := getDriver(dconfig)
-	//fmt.Println("Backup up to:", td.Containername)
 	td.Connect()
 	proceed := td.Authenticate()
 	if !proceed {
@@ -140,11 +147,11 @@ func BackupServer(cmd *cobra.Command, args []string) {
 	}
 	res, err := r.ExecuteCommand("SYNC")
 	if err != nil {
-		logger.Println("Error on sync:", err)
+		logger.Fatal("Unable to continue, Error on sync:", err)
 	}
 	rdb, err := res.BytesValue()
 	if err != nil {
-		logger.Println("Error on sync:", err)
+		logger.Fatal("Unable to continue, Error on sync part two:", err)
 	}
 
 	datasize := float64(len(rdb)) / 1024.0
