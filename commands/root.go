@@ -22,6 +22,7 @@ func AddCommands() {
 	RootCommand.AddCommand(version)
 	RootCommand.AddCommand(inspectCommand)
 	RootCommand.AddCommand(backup)
+	RootCommand.AddCommand(cloneCommand)
 }
 
 func init() {
