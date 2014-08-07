@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	logger = log.New(os.Stdout, "reditool", log.LstdFlags)
+	logger = log.New(os.Stdout, "reditool ", log.LstdFlags)
 	sentinelCloneCommand.Flags().StringVarP(&originHost, "origin", "o", "127.0.0.1:6379", "Host to clone freom to")
 	sentinelCloneCommand.Flags().StringVarP(&cloneHost, "clone", "c", "127.0.0.1:6379", "Host to clone to")
 	sentinelCloneCommand.Flags().StringVarP(&roleRequired, "role", "r", "master", "Role the server must present before we perform backup")

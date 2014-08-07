@@ -30,11 +30,11 @@ func init() {
 	backup.Flags().StringVarP(&backupDestination, "destination", "d", "localfile", "Which destination type to save the backup to")
 	backup.Flags().StringVarP(&containerName, "container", "c", "redis-backups", "The container/directry to store the backup in")
 	backup.Flags().StringVarP(&fileFormat, "nameformat", "n", "02-01-2006-15-04-dump.rdb", "The time format example to use and the suffix. This will result in the name of the file the dump is saved to. For your reference the understood values are ' Mon Jan 2 15:04:05 MST 2006'. To get MM-YYYY-DD.rd use '01-2006-02.rdb'")
-	logger = log.New(os.Stdout, "reditool", log.LstdFlags)
 	backup.Flags().StringVarP(&apikey, "apikey", "a", "", "The API key for the cloud storage service being used")
 	backup.Flags().StringVarP(&username, "username", "u", "", "The username for the cloud storage service being used")
 	//backup.Flags().BoolVarP(&waitForBGSave, "waitforsave", "w", false, "If a BGSave is in progress, wait for completion before syncing")
 	//backup.Flags().IntVarP(&maxWait, "maxwait", "m", 60, "Maximum seconds to wait for a BGSave to complete")
+	logger = log.New(os.Stdout, "reditool ", log.LstdFlags)
 }
 
 var backup = &cobra.Command{
