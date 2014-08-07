@@ -28,6 +28,9 @@ the master the promote when complete. To do this you pass the `-n` or
 `--noconfig` option and clone will skip the config sync portion. Or use
 the enslave command.
 
+For more details on the clone command see [Clone Command Doc](docs/clone.md)
+For more details on the enslave command see [Enslave Command Doc](docs/enslave.md)
+
 ## Sentinel Node Cloning
 
 The sentinel-clone command provides the ability to duplicate the current
@@ -40,4 +43,4 @@ result in the origin sentinel instance being a blank slate.
 
 Sometimes commands get added but not mentioned here. You can use
 `reditool help` to see a command listing and `reditool help <command>`
-to get help on each command.
+to get help on each command. You can also check [the docs tree](docs/).
