@@ -89,12 +89,7 @@ func CloneServer(cmd *cobra.Command, args []string) {
 	clone.Info()
 	var oconfig map[string]string
 	// OK, now we are ready to start cloning
-	if noConfig {
-		oconfig, err = origin.ConfigGet("*")
-		if err != nil {
-			logger.Fatal("Unable to get origin config, aborting on err:", err)
-		}
-	} else {
+	if !noConfig {
 		oconfig, _ = CloneConfig(origin, clone)
 	}
 
