@@ -5,6 +5,8 @@ This command makes it easy to connect to  redis server, pull down the
 current snapshot and store it somewhere. That somewhere can be a local
 file, Rackspace CloudFile or Amazon S3.
 
+# Usage and Options
+
 ```
 Usage: 
   reditool backup [flags]
@@ -21,7 +23,6 @@ Usage:
   -u, --username="": The username for the cloud storage service being used
 ```
 
-# Options
 
 Most of the options should be easy to figure out from the usage text.
 However some might seem overloaded.

@@ -8,6 +8,8 @@ can authenticate against each node using different passwords, will set
 the masterauth directive in the slave, and can synchronize the passwords
 from the master's password as provided by the `-M` or `--masterauth` option.
 
+# Usage and Options
+
 ```
 Usage: 
   reditool enslave [flags]
