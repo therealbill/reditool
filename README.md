@@ -24,7 +24,9 @@ the new master.
 
 Note: If the origin instance does not allow or support the CONFIG
 command, you cannot clone it. In this case you must enslave the clone to
-the master the promote when complete.
+the master the promote when complete. To do this you pass the `-n` or
+`--noconfig` option and clone will skip the config sync portion. Or use
+the enslave command.
 
 ## Sentinel Node Cloning
 
@@ -33,3 +35,9 @@ configuration of a Sentinel instance to a new sentinel instance. It can also
 handle purging the origin of pods to effect sentinel migration. This will
 result in the origin sentinel instance being a blank slate.
 
+
+# Other Commands
+
+Sometimes commands get added but not mentioned here. You can use
+`reditool help` to see a command listing and `reditool help <command>`
+to get help on each command.
