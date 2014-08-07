@@ -89,14 +89,12 @@ func CloneServer(cmd *cobra.Command, args []string) {
 	clone.Info()
 	var oconfig map[string]string
 	// OK, now we are ready to start cloning
+	err = clone.ConfigSet("masterauth", originAuth)
+	if err != nil {
+		doLog("Unable to set masterauth on clone!")
+	}
 	if !noConfig {
 		oconfig, _ = CloneConfig(origin, clone)
-		if len(originAuth) != 0 {
-			err := clone.ConfigSet("masterauth", originAuth)
-			if err != nil {
-				doLog("Unable to set masterauth on clone!")
-			}
-		}
 	}
 
 	switch role {
@@ -231,17 +229,23 @@ func SyncCloneWithOrigin(originAddres string, clone *client.Redis, oconfig map[s
 	}
 	doLog(fmt.Sprintf("Successfully enslaved to %s:%s\n", slaveof[0], slaveof[1]))
 	syncComplete := false
+	time.Sleep(time.Duration(1000) * time.Millisecond) // wait for the slave to start the sync
 	new_info, _ := clone.Info()
 	syncComplete = !new_info.Replication.MasterSyncInProgress
+	println("SIP:", new_info.Replication.MasterSyncInProgress)
+	println("syncComplete:", syncComplete)
 	syncTime := 0.0
 	if !syncComplete {
 		doLog("Sync in progress...")
 		for {
 			new_info, _ := clone.Info()
 			syncComplete = !new_info.Replication.MasterSyncInProgress
+			println("SIP:", new_info.Replication.MasterSyncInProgress)
+			println("syncComplete:", syncComplete)
 			if !syncComplete {
 				syncTime += .5
 				if syncTime >= syncTimeout {
+					doLog("Sync took longer than expected, aborting until this is better handled!")
 					break
 				}
 				time.Sleep(time.Duration(500) * time.Millisecond)
@@ -252,10 +256,11 @@ func SyncCloneWithOrigin(originAddres string, clone *client.Redis, oconfig map[s
 	}
 	new_info, _ = clone.Info()
 	if new_info.Replication.MasterLinkStatus != "up" {
+		doLog(fmt.Sprintf("masterlink is not 'up', but '%s'", new_info.Replication.MasterLinkStatus))
 		syncComplete = false
 	}
 	if !syncComplete {
-		doLog("Sync took longer than expected, aborting until this is better handled!")
+		doLog("Sync did not complete")
 		return false
 	}
 	doLog("Sync appears to be completed")
