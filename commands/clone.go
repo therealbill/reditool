@@ -15,6 +15,8 @@ import (
 var (
 	originHost          string
 	cloneHost           string
+	originAuth          string
+	cloneAuth           string
 	promoteWhenComplete bool
 	reconfigureSlaves   bool
 	syncTimeout         float64
@@ -25,6 +27,8 @@ func init() {
 	cloneCommand.Flags().StringVarP(&originHost, "origin", "o", "127.0.0.1:6379", "Host to clone freom to")
 	cloneCommand.Flags().StringVarP(&cloneHost, "clone", "c", "127.0.0.1:6379", "Host to clone to")
 	cloneCommand.Flags().StringVarP(&roleRequired, "role", "r", "master", "Role the server must present before we perform backup")
+	cloneCommand.Flags().StringVarP(&originAuth, "originauth", "O", "", "The auth token needed to work with the origin node")
+	cloneCommand.Flags().StringVarP(&cloneAuth, "cloneAuth", "C", "", "The auth token needed to work with the clone node")
 	cloneCommand.Flags().BoolVarP(&promoteWhenComplete, "promote", "p", false, "Promote clone to master when completed")
 	cloneCommand.Flags().BoolVarP(&reconfigureSlaves, "reconfigure", "R", false, "Reconfigure slaves to point to the new clone when complete, implies -p")
 	cloneCommand.Flags().Float64VarP(&syncTimeout, "timeout", "t", 10, "Seconds before a slave sync times out")
@@ -45,7 +49,7 @@ func CloneServer(cmd *cobra.Command, args []string) {
 	}
 
 	// Connect to the Origin node
-	originConf := client.DialConfig{Address: originHost}
+	originConf := client.DialConfig{Address: originHost, Password: originAuth}
 	origin, err := client.DialWithConfig(&originConf)
 	if err != nil {
 		logger.Fatal("Unable to connect to origin")
@@ -54,9 +58,13 @@ func CloneServer(cmd *cobra.Command, args []string) {
 	}
 	// obtain node information
 	info, err := origin.Info()
-	role := info.Replication.Role
 	if err != nil {
-		logger.Fatal("Unable to get the role of the origin instance")
+		logger.Fatal("unable to run commands on origin server due to error:", err)
+	}
+	role := info.Replication.Role
+	if len(role) == 0 {
+		logger.Fatal("Unable to get the role of the origin instance, try authentication")
+		return
 	}
 	logger.Println("Role:", role)
 	// verify the role we get matches our condition for a backup
@@ -68,7 +76,7 @@ func CloneServer(cmd *cobra.Command, args []string) {
 		return
 	}
 	// Now connect to the clone ...
-	cloneConf := client.DialConfig{Address: cloneHost}
+	cloneConf := client.DialConfig{Address: cloneHost, Password: cloneAuth}
 	clone, err := client.DialWithConfig(&cloneConf)
 	if err != nil {
 		logger.Fatal("Unable to connect to clone")
