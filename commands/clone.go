@@ -91,6 +91,12 @@ func CloneServer(cmd *cobra.Command, args []string) {
 	// OK, now we are ready to start cloning
 	if !noConfig {
 		oconfig, _ = CloneConfig(origin, clone)
+		if len(originAuth) != 0 {
+			err := clone.ConfigSet("masterauth", originAuth)
+			if err != nil {
+				doLog("Unable to set masterauth on clone!")
+			}
+		}
 	}
 
 	switch role {
@@ -243,6 +249,10 @@ func SyncCloneWithOrigin(originAddres string, clone *client.Redis, oconfig map[s
 				break
 			}
 		}
+	}
+	new_info, _ = clone.Info()
+	if new_info.Replication.MasterLinkStatus != "up" {
+		syncComplete = false
 	}
 	if !syncComplete {
 		doLog("Sync took longer than expected, aborting until this is better handled!")
