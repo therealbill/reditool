@@ -23,6 +23,7 @@ func AddCommands() {
 	RootCommand.AddCommand(inspectCommand)
 	RootCommand.AddCommand(backup)
 	RootCommand.AddCommand(cloneCommand)
+	RootCommand.AddCommand(sentinelCloneCommand)
 }
 
 func init() {
