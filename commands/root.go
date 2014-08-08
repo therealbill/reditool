@@ -24,6 +24,7 @@ func AddCommands() {
 	RootCommand.AddCommand(backup)
 	RootCommand.AddCommand(cloneCommand)
 	RootCommand.AddCommand(sentinelCloneCommand)
+	RootCommand.AddCommand(enslaveCommand)
 }
 
 func init() {
