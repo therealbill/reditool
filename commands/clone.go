@@ -125,7 +125,7 @@ func CloneServer(cmd *cobra.Command, args []string) {
 		// Next we need to see if we should promote the new clone to a master
 		// this is useful for migrating a master but also for providing a
 		// production clone for dev or testing
-		if promoteWhenComplete {
+		if promoteWhenComplete || reconfigureSlaves {
 			promoted := clone.SlaveOf("no", "one")
 			if promoted != nil {
 				logger.Fatal("Was unable to promote clone to master, investigate why!")
@@ -141,18 +141,13 @@ func CloneServer(cmd *cobra.Command, args []string) {
 				logger.Printf("Clone of %s to %s complete", originHost, cloneHost)
 				return
 			} else {
-				// I don't like how this looks but it works
+				logger.Printf("Reconfiguring slaves as requested: %+v", info.Replication.Slaves)
 				info, _ := origin.Info()
 				slaveof := strings.Split(cloneHost, ":")
 				desired_port, _ := strconv.Atoi(slaveof[1])
-				for index, data := range info.Replication.Slaves {
-					logger.Printf("Reconfiguring slave %d/%d\n", index, info.Replication.ConnectedSlaves)
-					slaveMap := make(map[string]string)
-					for _, line := range strings.Split(data, ",") {
-						dsplit := strings.Split(line, "=")
-						slaveMap[dsplit[0]] = dsplit[1]
-					}
-					slave_connstring := fmt.Sprintf("%s:%s", slaveMap["ip"], slaveMap["port"])
+				for _, data := range info.Replication.Slaves {
+					slave_connstring := fmt.Sprintf("%s:%d", data.IP, data.Port)
+					logger.Printf("reconfigurign slave '%s", slave_connstring)
 					slaveconn, err := client.DialWithConfig(&client.DialConfig{Address: slave_connstring})
 					if err != nil {
 						logger.Printf("Unable to connect to slave '%s', skipping", slave_connstring)
@@ -165,11 +160,12 @@ func CloneServer(cmd *cobra.Command, args []string) {
 					}
 					time.Sleep(time.Duration(100) * time.Millisecond) // needed to give the slave time to sync.
 					slave_info, _ := slaveconn.Info()
+					log.Printf("%+v", slave_info.Replication)
 					if slave_info.Replication.MasterHost == slaveof[0] {
 						if slave_info.Replication.MasterPort == desired_port {
 							logger.Printf(fmt.Sprintf("Slaved %s to clone", slave_connstring))
 						} else {
-							doLog(fmt.Sprintf("Hmm, slave settings don't match, look into this on slave", slaveMap["ip"], slaveMap["port"]))
+							//doLog(fmt.Sprintf("Hmm, slave settings don't match, look into this on slave %s %d", data.IP, data.Port]))
 						}
 					}
 				}
