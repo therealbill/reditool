@@ -164,7 +164,7 @@ func CloneServer(cmd *cobra.Command, args []string) {
 						if slave_info.Replication.MasterPort == desired_port {
 							logger.Printf(fmt.Sprintf("Slaved %s to clone", slave_connstring))
 						} else {
-							//doLog(fmt.Sprintf("Hmm, slave settings don't match, look into this on slave %s %d", data.IP, data.Port]))
+							doLog(fmt.Sprintf("Hmm, slave settings don't match, look into this on slave %s %d", data.IP, data.Port))
 						}
 					}
 				}
