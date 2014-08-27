@@ -158,9 +158,8 @@ func CloneServer(cmd *cobra.Command, args []string) {
 						logger.Printf("Unable to slave %s to clone. Err: '%s'", slave_connstring, err)
 						continue
 					}
-					time.Sleep(time.Duration(100) * time.Millisecond) // needed to give the slave time to sync.
+					time.Sleep(time.Duration(200) * time.Millisecond) // needed to give the slave time to sync.
 					slave_info, _ := slaveconn.Info()
-					log.Printf("%+v", slave_info.Replication)
 					if slave_info.Replication.MasterHost == slaveof[0] {
 						if slave_info.Replication.MasterPort == desired_port {
 							logger.Printf(fmt.Sprintf("Slaved %s to clone", slave_connstring))
